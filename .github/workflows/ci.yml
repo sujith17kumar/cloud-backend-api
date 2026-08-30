@@ -62,7 +62,7 @@ jobs:
           docker build -t cloud-backend-api:${{ github.sha }} .
 
       - name: Run Trivy Vulnerability Scanner
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@0.20.0
         with:
           image-ref: 'cloud-backend-api:${{ github.sha }}'
           format: 'table'
