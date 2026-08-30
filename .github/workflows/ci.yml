@@ -10,6 +10,7 @@ jobs:
   test-and-lint:
     name: Run Unit Tests & Linting
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
@@ -27,6 +28,7 @@ jobs:
     name: Build & Verify Docker Image
     needs: test-and-lint
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
@@ -43,13 +45,14 @@ jobs:
           docker run -d -p 8080:8080 --name test-api cloud-backend-api:${{ github.sha }}
           sleep 5
           docker ps
-          curl -f http://localhost:8080/health || exit 1
+          curl --retry 3 --retry-delay 2 --connect-timeout 5 --max-time 10 -f http://localhost:8080/health || exit 1
           docker stop test-api
 
   vulnerability-scan:
     name: Scan Image for Vulnerabilities (Trivy)
     needs: build-and-validate-container
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
@@ -59,7 +62,7 @@ jobs:
           docker build -t cloud-backend-api:${{ github.sha }} .
 
       - name: Run Trivy Vulnerability Scanner
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.28.0
         with:
           image-ref: 'cloud-backend-api:${{ github.sha }}'
           format: 'table'
@@ -72,6 +75,7 @@ jobs:
     name: Push Container Image to Docker Hub
     needs: vulnerability-scan
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
       - name: Checkout Source Code
