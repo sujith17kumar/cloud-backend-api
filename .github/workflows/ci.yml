@@ -1,4 +1,4 @@
-name: Cloud Backend CI Pipeline
+name: Cloud Backend CI/CD & Security Pipeline
 
 on:
   push:
@@ -45,3 +45,25 @@ jobs:
           docker ps
           curl -f http://localhost:8080/health || exit 1
           docker stop test-api
+
+  vulnerability-scan:
+    name: Scan Image for Vulnerabilities (Trivy)
+    needs: build-and-validate-container
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Build Docker Image Locally for Scanner
+        run: |
+          docker build -t cloud-backend-api:${{ github.sha }} .
+
+      - name: Run Trivy Vulnerability Scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'cloud-backend-api:${{ github.sha }}'
+          format: 'table'
+          exit-code: '0'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
