@@ -1,0 +1,4 @@
+output "web_security_group_id" {
+  value       = aws_security_group.web_sg.id
+  description = "ID of the web security group"
+}

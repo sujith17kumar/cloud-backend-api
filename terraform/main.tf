@@ -30,3 +30,19 @@ module "vpc" {
   private_subnet_cidrs = var.private_subnet_cidrs
   availability_zones   = var.availability_zones
 }
+
+module "security" {
+  source = "./modules/security"
+
+  vpc_id      = module.vpc.vpc_id
+  environment = var.environment
+}
+
+module "compute" {
+  source = "./modules/compute"
+
+  environment        = var.environment
+  subnet_id          = module.vpc.public_subnet_ids[0]
+  security_group_ids = [module.security.web_security_group_id]
+  instance_type      = "t3.micro"
+}
