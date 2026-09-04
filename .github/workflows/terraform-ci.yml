@@ -1,0 +1,59 @@
+name: "Terraform CI & Security Scan"
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'terraform/**'
+      - '.github/workflows/terraform-ci.yml'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'terraform/**'
+      - '.github/workflows/terraform-ci.yml'
+
+jobs:
+  validate:
+    name: "Lint & Validate Terraform"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.6.0"
+
+      - name: Check Formatting
+        id: fmt
+        run: terraform fmt -check
+        working-directory: terraform
+
+      - name: Terraform Init
+        id: init
+        run: terraform init -backend=false
+        working-directory: terraform
+
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate
+        working-directory: terraform
+
+  security-scan:
+    name: "Trivy IaC Security Scan"
+    runs-on: ubuntu-latest
+    needs: validate
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy IaC Scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'config'
+          scan-ref: 'terraform/'
+          exit-code: '0'
+          severity: 'CRITICAL,HIGH'

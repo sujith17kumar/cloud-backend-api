@@ -1,4 +1,4 @@
-# Fetch Latest Ubuntu 22.04 LTS AMI in the current region
+# Fetch Latest Ubuntu 22.04 LTS AMI in current region
 data "aws_ami" "ubuntu" {
   most_recent = true
 
@@ -15,6 +15,12 @@ data "aws_ami" "ubuntu" {
   owners = ["099720109477"] # Canonical
 }
 
+# SSH Key Pair
+resource "aws_key_pair" "deployer" {
+  key_name   = "${var.environment}-deployer-key"
+  public_key = file("~/.ssh/id_rsa.pub")
+}
+
 # EC2 Instance
 resource "aws_instance" "app_server" {
   ami                         = data.aws_ami.ubuntu.id
@@ -22,6 +28,7 @@ resource "aws_instance" "app_server" {
   subnet_id                   = var.subnet_id
   vpc_security_group_ids      = var.security_group_ids
   associate_public_ip_address = true
+  key_name                    = aws_key_pair.deployer.key_name
 
   user_data = <<-EOF
               #!/bin/bash
