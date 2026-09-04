@@ -16,3 +16,9 @@ variable "instance_type" {
   type    = string
   default = "t2.micro"
 }
+
+variable "public_key" {
+  type        = string
+  description = "Public SSH key for instance access"
+  default     = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGdummykeyforciandvalidationscanpurposesOnly="
+}

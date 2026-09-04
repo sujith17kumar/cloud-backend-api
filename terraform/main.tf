@@ -45,4 +45,5 @@ module "compute" {
   subnet_id          = module.vpc.public_subnet_ids[0]
   security_group_ids = [module.security.web_security_group_id]
   instance_type      = "t3.micro"
+  public_key         = try(file("~/.ssh/id_rsa.pub"), "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGdummykeyforciandvalidationscanpurposesOnly=")
 }

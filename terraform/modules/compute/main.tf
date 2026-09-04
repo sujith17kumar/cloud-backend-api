@@ -18,7 +18,7 @@ data "aws_ami" "ubuntu" {
 # SSH Key Pair
 resource "aws_key_pair" "deployer" {
   key_name   = "${var.environment}-deployer-key"
-  public_key = file("~/.ssh/id_rsa.pub")
+  public_key = var.public_key
 }
 
 # EC2 Instance
